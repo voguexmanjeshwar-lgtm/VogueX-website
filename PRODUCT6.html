@@ -139,6 +139,23 @@
     background:#e7e1d6;
   }
 
+  .card-img-strip{
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;
+    height:100%;
+  }
+
+  .card-img-strip::-webkit-scrollbar{ display:none; }
+  .card-img-strip img{
+    flex:0 0 100%;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    scroll-snap-align: start;
+  }
+
   .card-img-wrap img{
     width:100%; height:100%;
     object-fit:cover;
@@ -655,17 +672,24 @@ function openZoomModal(productId){
   const p = PRODUCTS.find(item => item.id === productId);
   if (!p) return;
 
-  const zoomOverlay= document.getElementById('zoomOverlay');
-  const zoomImg = document.getElementById('zoomImg');
+  const zoomOverlay = document.getElementById('zoomOverlay');
+  const zoomViewport = zoomOverlay.querySelector('.zoom-viewport');
   const swatchLabel = document.getElementById('swatchLabel');
-
+  
   zoomOverlay.querySelector('.zoom-modal-head .name').textContent = p.name;
-  zoomImg.src = p.img;
- 
-  document.querySelectorAll('swatch').forEach(s => s.classList.remove('active'));
+
+  const photos = (p.images && p.images.length > 0) ? p.images : [p.img];
+  zoomViewport.innerHTML = photos.map((src, index) =>
+    `<img class="zoom-modal-img" id="${index === 0 ? 'zoomImg' : ''}" src="${src}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover; flex-shrink:0; scroll-snap-align:start;">`
+  ).join('');
+
+  zoomViewport.style.display = 'flex';
+  zoomViewport.style.overflowX = photos.length > 1 ? 'auto' : 'hidden';
+  zoomViewport.style.scrollSnapType = 'x mandatory';
+
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
 
   // Show or hide color swatches based on product setting
-  const hasColor = !!p.hasColorZoom;
   document.querySelector('.swatches').style.display = p.hasColorZoom ? 'flex' : 'none';
   if (swatchLabel) swatchLabel.style.display = p.hasColorZoom ? 'block' : 'none';
 
@@ -693,6 +717,12 @@ document.querySelectorAll('.swatch').forEach(swatch => {
     document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
     swatch.classList.add('active');
     selectedColorKey = swatch.dataset.color;
+
+    const zoomImg = document.getElementById('zoomImg');
+    const swatchLabel = document.getElementById('swatchLabel');
+    zoomImg.style.transformOrigin = swatch.dataset.origin;
+    zoomImg.style.transform = 'scale(2.1)';
+    swatchLabel.textContent = swatch.dataset.label;
   });
 });
 
@@ -749,13 +779,13 @@ if (EMAILJS_PUBLIC_KEY && window.emailjs) {
    photos — for now they all use the one supplied image.
    ===================================================================== */
 const PRODUCTS = [
-  { id: 1, name: "ballon baggy",     tag: "bottoms", price: 1000,  img: "https://i.ibb.co/rK4fcTP3/aaa.png",sizes: ["S", "M", "L", "XL"] },
+{ id: 1, name: "ballon baggy", tag: "bottoms", price: 1000, images: ["https://i.ibb.co/rK4fcTP3/aaa.png", "https://i.ibb.co/xSG9nkm1/aaa.png"], sizes: ["S", "M", "L", "XL"] }, 
   { id: 2, name: "blue strips",     tag: "tees",   price: 850,  img: "https://i.ibb.co/KcC2C9fN/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 3, name: "Static brown Denim",        tag: "Denim",     price: 900,  img: "https://i.ibb.co/xSG9nkm1/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 4, name: "green collared Tee",       tag: "collared",      price: 750,  img: "https://i.ibb.co/DH57TVD4/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 5, name: "arouse byld",   tag: "Outerwear", price: 700, img: "https://i.ibb.co/Q7J8wB26/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 6, name: "adidas blk",     tag: "hoddies",   price: 750,  img: "https://i.ibb.co/Pz9y97Rm/aaa.png",sizes: ["S", "M", "L", "XL"] },
-  { id: 7, name: "CARNIVAL",   tag: "COL TEES", price: 800, img: "https://i.ibb.co/QF0xHHhm/aaa.png",sizes: ["S", "M", "L", "XL"] },
+  { id: 7, name: "CARNIVAL",   tag: "COL TEES", price: 800, img: "https://i.ibb.co/Jj0SpNC1/Save-Clip-App-788924691-17900262003583275-1903626817592898667-n.jpg",sizes: ["S", "M", "L", "XL"] },
   { id: 8, name: "BARCA JERSY",   tag: "JERSY", price: 750, img: "https://i.ibb.co/pvDp1fZc/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 9, name: "DIESEL",   tag: "COL TEES", price: 800, img: "https://i.ibb.co/rGQRSQy0/aaa.png",sizes: ["S", "M", "L", "XL"] },
   { id: 10, name: "TOMMY",   tag: "COL TEES", price: 850, img: "https://i.ibb.co/MkVxk2R7/aaa.png",sizes: ["S", "M", "L", "XL"] },
@@ -763,10 +793,10 @@ const PRODUCTS = [
   { id: 12, name: "D-",   tag: "WARMERS", price: 800, img: "https://i.ibb.co/HpDwq971/AAA.png",sizes: ["S", "M", "L", "XL"] },
   { id: 13, name: "BRAZIL JERSY",   tag: "JERSY", price: 700, img: "https://i.ibb.co/hFD1979J/AAA.png",sizes: ["S", "M", "L", "XL"] },
   { id: 14, name: "ADIDAS COL",   tag: "COL TEES", price: 750, img: "https://i.ibb.co/rf7BZnpX/AAA.png",sizes: ["S", "M", "L", "XL"] },
-  { id: 15, name: "URBAN CHECK",   tag: "SHIRTS", price: 850, img: "https://i.ibb.co/Wht9dyk/AAA.png",sizes: ["S", "M", "L", "XL"] },
+  { id: 15, name: "URBAN CHECK",   tag: "SHIRTS", price: 850, img: "https://i.ibb.co/V0HxPyHC/Save-Clip-App-683623594-17878292574583275-7049109111354819232-n.jpg",sizes: ["S", "M", "L", "XL"] },
   { id: 16, name: "CHECKED",   tag: "H-SHIRTS", price: 850, img: "https://i.ibb.co/xSQZDQZd/AAA.png",sizes: ["S", "M", "L", "XL"] },
   { id: 17, name: "P-CHECKED",   tag: "H-SHIRTS", price: 850, img: "https://i.ibb.co/8gXsq3t2/AAA.png",sizes: ["S", "M", "L", "XL"] },
-  { id: 18, name: "P=CHECK",   tag: "H-SHIRTS", price: 850, img: "https://i.ibb.co/JTV0tM3/AAA.png",sizes: ["S", "M", "L", "XL"] },
+  { id: 18, name: "P-CHECK",   tag: "H-SHIRTS", price: 850, img: "https://i.ibb.co/JTV0tM3/AAA.png",sizes: ["S", "M", "L", "XL"] },
   { id: 19, name: "V-FADE",   tag: "TEES", price: 700, img: "https://i.ibb.co/SDvrhZC3/AAA.png",sizes: ["S", "M", "L", "XL"] },
   { id: 20, name: "THIN STRIPS",   tag: "SHIRTS", price: 750, img: "https://i.ibb.co/gL0X6Tnc/aaa.jpg", hasColorZoom: true,sizes: ["S", "M", "L", "XL"] },
 
@@ -780,9 +810,13 @@ PRODUCTS.forEach(p => {
   const card = document.createElement('div');
   card.className = 'card';
 
+  const photos = p.images || [p.img];
+  const zoomClick = ` onclick="openZoomModal(${p.id})" style="cursor:pointer:"`;
+  const imagesHTML = photos.map(src => `<img src="${src}" alt="${p.name}" loading="lazy"${zoomClick}>`).join('');
+
   card.innerHTML = `
     <div class="card-img-wrap">
-      <img src="${p.img}" alt="${p.name}" loading="lazy" onclick="openZoomModal(${p.id})">
+      <div class="card-img-strip">${imagesHTML}</div>
     </div>
     <div class="card-body">
       <span class="card-tag">${p.tag}</span>
@@ -847,11 +881,10 @@ function renderCart(){
     const colorName= colorKey ? ` - ${COLOR_LABELS[colorKey]}` : '';
     const sizeName = size ? ` (${size})` : '';
     const displayName = `${p.name}${sizeName}${colorName}`;
+    const primaryImg = (p.images && p.images.length > 0) ? p.images[0] : p.img;
     return `
       <div class="line-item" data-id="${Key}">
-        <img src="${p.img}" alt="${displayName}">
-        <div class="line-info">
-          <div class="name">${displayName}</div>
+<img src="${(p.images && p.images.length > 0) ? p.images[0] : p.img}" alt="${p.name}" loading="lazy" onclick="openZoomModal(${p.id})">          <div class="name">${displayName}</div>
           <div class="price">Rs ${p.price} × ${qty} = Rs ${p.price * qty}</div>
           <div class="line-qty">
             <button class="qty-btn" data-action="dec" data-id="${Key}">−</button>
