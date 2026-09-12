@@ -198,12 +198,22 @@
     background:#e7e1d6;
   }
 
-  .card-img-wrap img{
-    width:100%; height:100%;
-    object-fit:cover;
-    transition:transform .5s ease;
+  .card-img-strip{
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;
+    height:100%;
   }
-  .card:hover .card-img-wrap img{transform:scale(1.05);}
+
+  .card-img-strip::-webkit-scrollbar{ display:none; }
+  .card-img-strip img{
+    flex:0 0 100%;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    scroll-snap-align: start;
+  }
 
   .card-body{
     padding:20px 20px 22px;
@@ -260,6 +270,78 @@
   }
   .nav-btn:hover{border-color:var(--pink); background:rgba(255,45,106,0.08);}
   .nav-btn svg{width:16px; height:16px;}
+
+  /* ---------- Modal & Popup ---------- */
+  .zoom-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.75);
+    display:flex; align-items:center; justify-content:center;
+    z-index:100;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.3s ease;
+    padding:20px;
+  }
+  .zoom-overlay.open{ opacity:1; pointer-events:auto; }
+  .zoom-modal{
+    background:#f7f3ec; color:#0b0b0d;
+    border-radius:10px; max-width:420px; width:100%;
+    overflow:hidden; transform:scale(0.95);
+    transition:transform 0.3s ease;
+  }
+  .zoom-overlay.open .zoom-modal{ transform:scale(1); }
+  .zoom-modal-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 18px 0;
+  }
+  .zoom-modal-close{
+    width:32px; height:32px; border-radius:50%;
+    background:rgba(11,11,13,0.08);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .zoom-viewport{
+    width:100%; aspect-ratio:4/5; overflow:hidden;
+    position:relative; background:#000;
+  }
+  .zoom-viewport img{
+    width:100%; height:100%; object-fit:cover;
+    transform:scale(1); transform-origin:50% 50%;
+    transition:transform 0.6s cubic-bezier(.25,.8,.25,1), transform-origin 0.6s cubic-bezier(.25,.8,.25,1);
+  }
+  .swatches{ display:flex; gap:14px; justify-content:center; padding: 12px 18px; }
+  .swatch{
+    width:38px; height:38px; border-radius:50%;
+    border:2px solid transparent; cursor:pointer;
+    transition:transform 0.2s ease, border-color 0.2s ease;
+  }
+  .swatch:hover{ transform:scale(1.1); }
+  .swatch.active {
+    outline:  3px solid #000;
+    outline-offset: 2px;
+    transform: scale(1.1);
+  }
+  .swatch[data-color="lavender"]{ background:#a98d95; }
+  .swatch[data-color="blush"]{ background:#f2b9b0; }
+  .swatch[data-color="cream"]{ background:#f1e3ab; }
+  .swatch-label{ text-align:center; font-size:0.8rem; color:#55524d; padding-bottom:18px; min-height:1.2em; }
+    
+  .size-btn{
+    padding: 6px 14px;
+    border: 1px solid #0b0b0d;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: #ffffff;
+    color: #000000;
+    transition: all 0.2s ease;
+  }
+  .size-btn.active {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #000 !important;
+    font-weight: bold;
+  }
 
   /* ---------- About strip ---------- */
   .strip{
@@ -330,7 +412,6 @@
     color: #ffffff;
   }
   .insta-float svg{width: 26px; height:26px;}
-
 
   .wa-float{
     left:26px;
@@ -492,11 +573,6 @@
     *{transition:none !important; scroll-behavior:auto !important;}
   }
 
-
-
-
-
-  
   #splash{
     position:fixed;
     inset:0;
@@ -588,6 +664,27 @@
   <div>Questions? <a href="mailto:abdullahakam14@gmail.com" style="text-decoration:underline;">abdullahakam14@gmail.com</a></div>
 </footer>
 
+<!-- ---------- ZOOM / SIZE MODAL ---------- -->
+<div class="zoom-overlay" id="zoomOverlay">
+  <div class="zoom-modal">
+    <div class="zoom-modal-head">
+      <span class="name">PRODUCT NAME</span>
+      <span class="zoom-modal-close" id="zoomCloseBtn">✕</span>
+    </div>
+    <div class="zoom-viewport">
+      <img id="zoomImg" src="" alt="Product view">
+    </div>
+    <p class="swatch-label" id="swatchLabel">All colors</p>
+    <div class="size container" style="display:flex; gap:8px; justify-content:center; padding:10px 0;" id="sizeWrapper"></div>
+    <div class="swatches">
+      <div class="swatch" data-color="lavender" data-label="Lavender Grey" data-origin="21% 20%"></div>
+      <div class="swatch" data-color="blush" data-label="Blush Pink" data-origin="79% 19%"></div>
+      <div class="swatch" data-color="cream" data-label="Soft Cream" data-origin="51% 76%"></div>
+    </div>
+    <button class="add-btn" id="zoomAddbtn" style="margin:0 18px 18px; width:calc(100% - 36px);">Add to Cart</button>
+  </div>
+</div>
+
 <!-- ---------- FLOATING BUTTONS ---------- -->
 <button class="float-btn cart-float" id="cartFloat" aria-label="Open cart">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -603,6 +700,7 @@
     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
   </svg>
 </a>
+
 <!-- ---------- CART DRAWER ---------- -->
 <div class="overlay" id="overlay"></div>
 <div class="drawer" id="drawer">
@@ -640,19 +738,27 @@
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
+let currentZoomProductId = null;
+let selectedColorKey = null;
+let selectedSize = null;
+
+const COLOR_LABELS = {
+  lavender: "Lavender grey",
+  blush: "Blush Pink",
+  cream: "Soft Cream"
+};
+
+function parseCartKey(key){
+  const [idPart, size, colorKey] = String(key).split('::');
+  return { productId: Number(idPart), size: size || null, colorKey: colorKey || null };
+}
+
 /* =====================================================================
    EMAILJS CONFIG
-   To enable direct email sending (no mail app popup), sign up free at
-   emailjs.com, create a service + email template, then fill in the
-   three values below. Until then, "Send Order" will fall back to
-   opening the customer's email app with the order pre-filled.
-
-   Suggested template variables to use in your EmailJS template:
-   {{customer_name}}  {{customer_phone}}  {{order_items}}  {{order_total}}
    ===================================================================== */
-const EMAILJS_PUBLIC_KEY  = "";   // e.g. "AbCdEfGhIjKlMnOp"
-const EMAILJS_SERVICE_ID  = "";   // e.g. "service_xxxxxxx"
-const EMAILJS_TEMPLATE_ID = "";   // e.g. "template_xxxxxxx"
+const EMAILJS_PUBLIC_KEY  = "";
+const EMAILJS_SERVICE_ID  = "";
+const EMAILJS_TEMPLATE_ID = "";
 const OWNER_EMAIL = "abdullahakam14@gmail.com";
 
 if (EMAILJS_PUBLIC_KEY && window.emailjs) {
@@ -661,49 +767,131 @@ if (EMAILJS_PUBLIC_KEY && window.emailjs) {
 
 /* =====================================================================
    PRODUCTS
-   Swap the "img" value per item once you have individual product
-   photos — for now they all use the one supplied image.
    ===================================================================== */
 const PRODUCTS = [
-  { id: 1, name: "ballon baggy",     tag: "bottoms", price: 1000,  img: "https://i.ibb.co/rK4fcTP3/aaa.png" },
-  { id: 2, name: "blue strips",     tag: "tees",   price: 850,  img: "https://i.ibb.co/KcC2C9fN/aaa.png" },
-  { id: 3, name: "green collared Tee",       tag: "collared",      price: 750,  img: "https://i.ibb.co/DH57TVD4/aaa.png" },
-  { id: 4, name: "arouse byld",   tag: "Outerwear", price: 700, img: "https://i.ibb.co/Q7J8wB26/aaa.png" },
-  { id: 5, name: "CARNIVAL",   tag: "COL TEES", price: 800, img: "https://i.ibb.co/QF0xHHhm/aaa.png" },
-  { id: 6, name: "BARCA JERSY",   tag: "JERSY", price: 750, img: "https://i.ibb.co/pvDp1fZc/aaa.png" },
+{ id: 1, name: "ballon baggy", tag: "bottoms", price: 1000, images: ["https://i.ibb.co/TDVJNHB7/curve-baggy.jpg", "https://i.ibb.co/7NYSpf6t/aaa-2.jpg"], sizes: ["S", "M", "L", "XL"] }, 
+  { id: 2, name: "blue strips",     tag: "tees",   price: 850,  images: ["https://i.ibb.co/KcC2C9fN/aaa.png","https://i.ibb.co/xKJ0LMRZ/SML.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 4, name: "TOMMY",       tag: "collared",      price: 850,  images: ["https://i.ibb.co/5gXyTKQ8/image.jpg","https://i.ibb.co/ycK8NtHb/1.jpg","https://i.ibb.co/WN15LZjV/2.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 7, name: "CARNIVAL",   tag: "COL TEES", price: 800, images: ["https://i.ibb.co/RT2pGb4r/limited-stock.jpg","https://i.ibb.co/NnY9Qx74/limited-stock-1.jpg","https://i.ibb.co/cSpgFbmQ/limited-stock-2.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 8, name: "BARCA JERSY",   tag: "JERSY", price: 750, images: ["https://i.ibb.co/0jyDD4Tv/barca-2.jpg","https://i.ibb.co/yF1Hnfx1/barca.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 17, name: "P-CHECKED",   tag: "H-SHIRTS", price: 850, images: ["https://i.ibb.co/Gvbx4qN5/boxy-combo.jpg","https://i.ibb.co/HpN2mvSX/boxy-combo-1.jpg","https://i.ibb.co/JWZpRy1h/boxy-combo-2.jpg"],sizes: ["S", "M", "L", "XL"] },
 ];
 
-let cart = {}; // { id: qty }
+let cart = {}; // { Key: qty }
 
 /* ---------- Render product carousel ---------- */
 const carouselEl = document.getElementById('carousel');
 PRODUCTS.forEach(p => {
   const card = document.createElement('div');
   card.className = 'card';
+
+  const photos = p.images || [p.img];
+  const imagesHTML = photos.map(src => `<img src="${src}" alt="${p.name}" loading="lazy" onclick="openZoomModal(${p.id})" style="cursor:pointer;">`).join('');
+
   card.innerHTML = `
-    <div class="card-img-wrap"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
+    <div class="card-img-wrap">
+      <div class="card-img-strip">${imagesHTML}</div>
+    </div>
     <div class="card-body">
       <span class="card-tag">${p.tag}</span>
       <span class="card-name">${p.name}</span>
       <span class="card-price">Rs ${p.price}</span>
-      <button class="add-btn" data-id="${p.id}">Add to Cart</button>
+      <button class="add-btn" onclick="openZoomModal(${p.id})">Add to Cart</button>
     </div>`;
   carouselEl.appendChild(card);
 });
 
-carouselEl.addEventListener('click', e => {
-  const btn = e.target.closest('.add-btn');
-  if (!btn) return;
-  const id = Number(btn.dataset.id);
-  cart[id] = (cart[id] || 0) + 1;
-  btn.textContent = "Added ✓";
-  btn.classList.add('added');
-  setTimeout(() => { btn.textContent = "Add to Cart"; btn.classList.remove('added'); }, 900);
-  renderCart();
-});
-
 document.getElementById('scrollLeft').addEventListener('click', () => carouselEl.scrollBy({ left: -320, behavior: 'smooth' }));
 document.getElementById('scrollRight').addEventListener('click', () => carouselEl.scrollBy({ left: 320, behavior: 'smooth' }));
+
+/* ---------- Modal functionality ---------- */
+function openZoomModal(productId){
+  currentZoomProductId = productId;
+  selectedSize = null;
+  selectedColorKey = null;
+  
+  const p = PRODUCTS.find(item => item.id === productId);
+  if (!p) return;
+
+  const zoomOverlay = document.getElementById('zoomOverlay');
+  const zoomViewport = zoomOverlay.querySelector('.zoom-viewport');
+  const swatchLabel = document.getElementById('swatchLabel');
+  
+  zoomOverlay.querySelector('.zoom-modal-head .name').textContent = p.name;
+
+  const photos = (p.images && p.images.length > 0) ? p.images : [p.img];
+  zoomViewport.innerHTML = photos.map((src, index) =>
+    `<img class="zoom-modal-img" id="${index === 0 ? 'zoomImg' : ''}" src="${src}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover; flex-shrink:0; scroll-snap-align:start;">`
+  ).join('');
+
+  zoomViewport.style.display = 'flex';
+  zoomViewport.style.overflowX = photos.length > 1 ? 'auto' : 'hidden';
+  zoomViewport.style.scrollSnapType = 'x mandatory';
+
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+
+  document.querySelector('.swatches').style.display = p.hasColorZoom ? 'flex' : 'none';
+  if (swatchLabel) swatchLabel.style.display = p.hasColorZoom ? 'block' : 'none';
+
+  const sizeWrapper = document.getElementById('sizeWrapper');
+  const sizes = p.sizes || ["S", "M", "L", "XL"];
+  
+  sizeWrapper.innerHTML = sizes.map(sz => `
+    <button type="button" class="size-btn" data-size="${sz}">${sz}</button>
+  `).join('');
+
+  sizeWrapper.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sizeWrapper.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedSize = btn.dataset.size;
+    });
+  });
+
+  zoomOverlay.classList.add('open'); 
+}
+
+document.querySelectorAll('.swatch').forEach(swatch => {
+  swatch.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    swatch.classList.add('active');
+    selectedColorKey = swatch.dataset.color;
+
+    const zoomImg = document.getElementById('zoomImg');
+    const swatchLabel = document.getElementById('swatchLabel');
+    if (zoomImg) {
+      zoomImg.style.transformOrigin = swatch.dataset.origin;
+      zoomImg.style.transform = 'scale(2.1)';
+    }
+    swatchLabel.textContent = swatch.dataset.label;
+  });
+});
+
+document.getElementById('zoomCloseBtn').addEventListener('click', () => {
+  document.getElementById('zoomOverlay').classList.remove('open');
+});
+
+const zoomAddBtn = document.getElementById('zoomAddbtn');
+zoomAddBtn.addEventListener('click', () => {
+  const p = PRODUCTS.find(item => item.id === currentZoomProductId);
+
+  if (!selectedSize) {
+    alert('Please select a size first.');
+    return;
+  }
+  if (p && p.hasColorZoom && !selectedColorKey) {
+    alert('Please pick a color first.');
+    return;
+  }
+
+  const colorPart = selectedColorKey ? `::${selectedColorKey}` : '';
+  const Key = `${currentZoomProductId}::${selectedSize}${colorPart}`;
+  
+  cart[Key] = (cart[Key] || 0) + 1;
+  zoomAddBtn.textContent = "Added ✓";
+  setTimeout(() => { zoomAddBtn.textContent = "Add to Cart"; }, 900);
+  renderCart();
+});
 
 /* ---------- Cart drawer ---------- */
 const overlay = document.getElementById('overlay');
@@ -726,8 +914,9 @@ function cartItemCount(){
 }
 
 function cartTotal(){
-  return Object.entries(cart).reduce((sum, [id, qty]) => {
-    const p = PRODUCTS.find(p => p.id === Number(id));
+  return Object.entries(cart).reduce((sum, [Key, qty]) => {
+    const { productId } = parseCartKey(Key);
+    const p = PRODUCTS.find(p => p.id === productId);
     return sum + (p ? p.price * qty : 0);
   }, 0);
 }
@@ -746,20 +935,27 @@ function renderCart(){
   }
 
   drawerForm.style.display = 'block';
-  drawerBody.innerHTML = entries.map(([id, qty]) => {
-    const p = PRODUCTS.find(p => p.id === Number(id));
+  drawerBody.innerHTML = entries.map(([Key, qty]) => {
+    const { productId, size, colorKey } = parseCartKey(Key);
+    const p = PRODUCTS.find(p => p.id === productId);
+
+    const colorName = colorKey ? ` - ${COLOR_LABELS[colorKey]}` : '';
+    const sizeName = size ? ` (${size})` : '';
+    const displayName = `${p.name}${sizeName}${colorName}`;
+    const primaryImg = (p.images && p.images.length > 0) ? p.images[0] : (p.img || '');
+
     return `
-      <div class="line-item" data-id="${id}">
-        <img src="${p.img}" alt="${p.name}">
+      <div class="line-item" data-id="${Key}">
+        <img src="${primaryImg}" alt="${p.name}" loading="lazy" onclick="openZoomModal(${p.id})">
         <div class="line-info">
-          <div class="name">${p.name}</div>
+          <div class="name">${displayName}</div>
           <div class="price">Rs ${p.price} × ${qty} = Rs ${p.price * qty}</div>
           <div class="line-qty">
-            <button class="qty-btn" data-action="dec" data-id="${id}">−</button>
+            <button class="qty-btn" data-action="dec" data-id="${Key}">−</button>
             <span>${qty}</span>
-            <button class="qty-btn" data-action="inc" data-id="${id}">+</button>
+            <button class="qty-btn" data-action="inc" data-id="${Key}">+</button>
           </div>
-          <span class="remove-item" data-action="remove" data-id="${id}">Remove</span>
+          <span class="remove-item" data-action="remove" data-id="${Key}">Remove</span>
         </div>
       </div>`;
   }).join('');
@@ -798,9 +994,13 @@ orderForm.addEventListener('submit', function(e){
     return;
   }
 
-  const itemsText = entries.map(([id, qty]) => {
-    const p = PRODUCTS.find(p => p.id === Number(id));
-    return `${p.name} × ${qty} — Rs ${p.price * qty}`;
+  const itemsText = entries.map(([Key, qty]) => {
+    const { productId, size, colorKey } = parseCartKey(Key);
+    const p = PRODUCTS.find(p => p.id === productId);
+    const colorName = colorKey ? ` - ${COLOR_LABELS[colorKey]}` : '';
+    const sizeName = size ? ` (${size})` : '';
+    const displayName = `${p.name}${sizeName}${colorName}`;
+    return `${displayName} × ${qty} — Rs ${p.price * qty}`;
   }).join('\n');
 
   const total = cartTotal();
