@@ -729,6 +729,26 @@
         <label for="custPhone">Phone number</label>
         <input type="tel" id="custPhone" required placeholder="e.g. 555 123 4567">
       </div>
+<div class="adress-section">
+   <div class ="field">
+          <label for ="custAddress">Street Adress/ House No./ Building</label>
+          <input type="text" id="custAddress" required placeholder="e.g., Flat 4B, Sunshine Apartments, MG road">
+        </div>
+        <div class="field-row" style="display: flex; gap:10px;">
+          <div class="field" style="flex: 1;">
+            <label for="custCity">City</label>
+            <input type="text" id="custCity" required placeholder="City">
+          </div>
+        <div class="field" style="flex: 1;">
+        <label for="custPincode">Pincode</label>
+        <input type="text" id="custPincode" required placeholder="6-digit pincode" pattern="[0-9]{6}">
+        </div>
+    </div>
+        <div class="field">
+          <label for="custLandmark"> Landmark (Optional)</label>
+          <input type="text" id="custLandmark" placeholder="e.g., Near City Mall or Opposite Bank">
+   </div>
+ </div>
       <button type="submit" class="send-btn" id="sendBtn">Send Order</button>
       <p class="form-status" id="formStatus"></p>
     </form>
@@ -775,6 +795,10 @@ const PRODUCTS = [
   { id: 7, name: "CARNIVAL",   tag: "COL TEES", price: 800, images: ["https://i.ibb.co/RT2pGb4r/limited-stock.jpg","https://i.ibb.co/NnY9Qx74/limited-stock-1.jpg","https://i.ibb.co/cSpgFbmQ/limited-stock-2.jpg"],sizes: ["S", "M", "L", "XL"] },
   { id: 8, name: "BARCA JERSY",   tag: "JERSY", price: 750, images: ["https://i.ibb.co/0jyDD4Tv/barca-2.jpg","https://i.ibb.co/yF1Hnfx1/barca.jpg"],sizes: ["S", "M", "L", "XL"] },
   { id: 17, name: "P-CHECKED",   tag: "H-SHIRTS", price: 850, images: ["https://i.ibb.co/Gvbx4qN5/boxy-combo.jpg","https://i.ibb.co/HpN2mvSX/boxy-combo-1.jpg","https://i.ibb.co/JWZpRy1h/boxy-combo-2.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 22, name: "AIR",   tag: "SWEATER", price: 850, images: ["https://i.ibb.co/pBvd2ZLh/aaa1.jpg","https://i.ibb.co/xSZJWSMF/aa.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 21, name: "FAITH",   tag: "H-SHIRTS", price: 800, images: ["https://i.ibb.co/Zz8bhgYS/a2.jpg","https://i.ibb.co/Q37xHP8X/a22.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 22, name: "AIR",   tag: "SWEATER", price: 850, images: ["https://i.ibb.co/pBvd2ZLh/aaa1.jpg","https://i.ibb.co/xSZJWSMF/aa.jpg"],sizes: ["S", "M", "L", "XL"] },
+  { id: 23, name: "BOOTCUT",   tag: "YELLOW", price: 900, images: ["https://i.ibb.co/3999SL8t/bootcut-28-30-32-34available.jpg","https://i.ibb.co/Fkq4pjYB/bootcut-28-30-32-34available-1.jpg"],sizes: ["S", "M", "L", "XL"] },
 ];
 
 let cart = {}; // { Key: qty }
@@ -986,6 +1010,12 @@ orderForm.addEventListener('submit', function(e){
 
   const name = document.getElementById('custName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
+  const street = document.getElementById('custAddress').value.trim();
+  const city = document.getElementById('custCity').value.trim();
+  const pincode = document.getElementById('custPincode').value.trim();
+  const landmark = document.getElementById('custLandmark').value.trim();
+
+  const fullAddress =  `${street}, ${city} - ${pincode}` + (landmark ? ` (Landmark: ${landmark})` : '');
   const entries = Object.entries(cart).filter(([_, qty]) => qty > 0);
 
   if (entries.length === 0){
@@ -1008,6 +1038,7 @@ orderForm.addEventListener('submit', function(e){
   const templateParams = {
     customer_name: name,
     customer_phone: phone,
+    customer_address: fullAddress,
     order_items: itemsText,
     order_total: `Rs ${total}`,
     to_email: OWNER_EMAIL
@@ -1032,14 +1063,14 @@ orderForm.addEventListener('submit', function(e){
       .catch(() => {
         formStatus.textContent = "Couldn't send automatically — opening your email app instead.";
         formStatus.className = "form-status err";
-        fallbackMailto(name, phone, itemsText, total);
+        fallbackMailto(name, phone, fullAddress, itemsText, total);
       })
       .finally(() => {
         sendBtn.disabled = false;
         sendBtn.textContent = "Send Order";
       });
   } else {
-    fallbackMailto(name, phone, itemsText, total);
+    fallbackMailto(name, phone, fullAddress, itemsText, total);
     sendBtn.disabled = false;
     sendBtn.textContent = "Send Order";
     formStatus.textContent = "Opening your email app to send the order...";
@@ -1047,10 +1078,10 @@ orderForm.addEventListener('submit', function(e){
   }
 });
 
-function fallbackMailto(name, phone, itemsText, total){
+function fallbackMailto(name, phone, address, itemsText, total){
   const subject = encodeURIComponent(`New Vogue X order from ${name}`);
   const body = encodeURIComponent(
-    `Customer name: ${name}\nPhone number: ${phone}\n\nItems:\n${itemsText}\n\nTotal: Rs ${total}`
+    `Customer name: ${name}\nPhone number: ${phone}\nAddress :${address}\nItems:\n${itemsText}\n\nTotal: Rs ${total}`
   );
   window.location.href = `mailto:${OWNER_EMAIL}?subject=${subject}&body=${body}`;
 }
