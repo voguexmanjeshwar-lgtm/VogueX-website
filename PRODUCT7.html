@@ -6,7 +6,14 @@
 <title>Vogue X — Because Basic Is Boring</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,700;0,800;1,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="[https://checkout.razorpay.com/v1/checkout.js](https://checkout.razorpay.com/v1/checkout.js)"></script>
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<!-- Firebase Authentication -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <style>
+ 
   :root{
     --black:#0b0b0d;
     --cream:#f7f3ec;
@@ -316,6 +323,7 @@
     transition:transform .35s cubic-bezier(.65,0,.35,1);
     display:flex;
     flex-direction:column;
+    max-height: 100vh;
   }
   .drawer.open{transform:translateX(0);}
 
@@ -340,7 +348,17 @@
     overflow-y:auto;
     padding:20px 24px;
   }
-
+  .drawer-form{
+    border-top: 1px solid rgba(11,11,13,0.1);
+    padding:20px 24px 26px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  #qrcode img, #qrcode canvas{ 
+    margin:0 auto;
+    max-width: 100%;
+    height: ;auto !important;
+  }
   .empty-cart{
     color:#8a8790;
     font-size:0.9rem;
@@ -515,13 +533,68 @@
     border-color: #000 !important;
     font-weight: bold;
   }
+  .admin-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.admin-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 180px;
+  background: var(--black);
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 0;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+.admin-dropdown.open {
+  display: flex;
+}
+
+.admin-dropdown-item {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-dropdown-item:hover {
+  background: rgba(255, 45, 106, 0.15);
+  color: var(--pink);
+}
 </style>
+
 </head>
 <body>
-
-<header>
+ <header>
   <div class="logo">Vogue<span>X</span></div>
-  <a href="#products" class="header-link">Shop</a>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <button class="header-link" id="loginBtn">Login</button>
+    
+    <div class="admin-menu-wrap" id="adminMenuWrap" style="display:none;">
+      <button class="header-link" id="adminBtn" style="display:inline-flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Admin
+      </button>
+
+      <div class="admin-dropdown" id="adminDropdown">
+        <button type="button" class="admin-dropdown-item" id="menuProfile">👤 Profile</button>
+        <button type="button" class="admin-dropdown-item" id="menuOrders">📦 Orders</button>
+        <button type="button" class="admin-dropdown-item" id="menuHelp">🎧 Help Desk</button>
+        <button type="button" class="admin-dropdown-item" id="menuLogout" style="color: var(--pink);">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
 </header>
 
 <!-- ---------- PRODUCTS ---------- -->
@@ -616,6 +689,13 @@
       <span>Total</span>
       <span id="totalAmount">Rs 0</span>
     </div>
+
+    
+<div id="loginPrompt" style="text-align:center; padding:20px; background:#f1e3ab; color:#0b0b0d; border-radius:6px; margin-bottom:12px;">
+  <p style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Please log in to place your order.</p>
+  <button type="button" class="send-btn" id="promptLoginBtn" style="padding:10px 20px; width:auto;">Login Now</button>
+</div>
+
     <form id="orderForm">
       <div class="field">
         <label for="custName">Your name</label>
@@ -648,15 +728,218 @@
           <input type="text" id="custLandmark" placeholder="e.g., Near City Mall or Opposite Bank">
         </div>
       </div>
+      <!-- Add this right above the submit button -->
+      <div id="upiPaymentBox" style="display:none; text-align:center; margin-bottom:12px; padding:15px; background:#fff; border-radius:6px; color:#0b0b0d;">
+        <p style="font-size:0.85rem; margin-bottom:10px; font-weight:600;">Scan with any UPI App or click below:</p>
+        <div id="qrcode" style="display:inline-block; margin-bottom:10px;"></div>
+        <div id="upiButtonContainer"></div>
+        <p style="font-size:0.75rem; color:#8a8790; margin-top:8px;">After payment, click below to confirm.</p>
+      </div>
+
       <button type="submit" class="send-btn" id="sendBtn">Send Order</button>
       <p class="form-status" id="formStatus"></p>
     </form>
   </div>
 </div>
+<div class="overlay" id="loginOverlay"></div>
+<div class="drawer" id="loginDrawer" style="width:min(100vw, 380px);">
+<div class="drawer-head">
+  <h3>Account Login</h3>
+  <button class="drawer-close" id="loginClose">✕</button>
+</div>
+<div class="drawer-body">
+  <form id="loginForm">
+    <div class="field" id="nameFieldContainer" style="display:none;">
+      <label>Full Name</label>
+      <input type="text" id="signupName" placeholder="John doe">
+    </div>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" required placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="Password" id="loginPassword" required placeholder="........">
+    </div>
+    <button type="submit" class="send-btn" id="authSubmitBtn" style="margin-top:10px;">Sign In</button>
+
+    <!-- Sign Up Switcher -->
+    <p style="text-align:center; margin-top:14px; font-size:0.82rem; color:var(--muted);">
+      <span id="authToggleText">Need an account?</span> 
+      <a href="#" id="authToggleBtn" style="color:var(--pink); text-decoration:underline; font-weight:600;">Sign Up</a>
+    </p>
+
+    <p class="form-status" id="loginStatus"></p>
+  </form>
+</div>
+</div>
 
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
+// Firebase Config Initialization
+const firebaseConfig = {
+  apiKey: "AIzaSyBkowknfppAz01d3QzwkCeBmZiVNXueOEE",
+  authDomain: "clothing-webstore-f5ab9.firebaseapp.com",
+  projectId: "clothing-webstore-f5ab9",
+  storageBucket: "clothing-webstore-f5ab9.firebasestorage.app",
+  messagingSenderId: "754199622656",
+  appId: "1:754199622656:web:7152b1cf29072563ed14e5",
+  measurementId: "G-HNWKRZV1QB"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+let isLoggedIn = false;
+let isSignUpMode = false;
+
+// Modal Open/Close Event Listeners
+document.getElementById('loginBtn').addEventListener('click', () => {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('loginDrawer').classList.add('open');
+});
+
+document.getElementById('loginClose').addEventListener('click', () => {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('loginDrawer').classList.remove('open');
+});
+
+// Toggle Sign In vs Sign Up
+// Toggle Sign In vs Sign Up
+const authToggleBtn = document.getElementById('authToggleBtn');
+const nameFieldContainer = document.getElementById('nameFieldContainer');
+
+if (authToggleBtn) {
+  authToggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    isSignUpMode = !isSignUpMode;
+    
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const toggleText = document.getElementById('authToggleText');
+    const toggleBtn = document.getElementById('authToggleBtn');
+    
+    if (isSignUpMode) {
+      if (submitBtn) submitBtn.textContent = "Create Account";
+      if (toggleText) toggleText.textContent = "Already have an account?";
+      if (toggleBtn) toggleBtn.textContent = "Sign In";
+      if (nameFieldContainer) nameFieldContainer.style.display = 'block'; // Show name field
+    } else {
+      if (submitBtn) submitBtn.textContent = "Sign In";
+      if (toggleText) toggleText.textContent = "Need an account?";
+      if (toggleBtn) toggleBtn.textContent = "Sign Up";
+      if (nameFieldContainer) nameFieldContainer.style.display = 'none';  // Hide name field
+    }
+  });
+}
+
+// Unified Form Handler for Sign In & Sign Up
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const status = document.getElementById('loginStatus');
+  const nameInput = document.getElementById('signupName').value.trim();
+
+  status.textContent = isSignUpMode ? "Creating account..." : "Signing in...";
+  status.className = "form-status";
+
+  if (isSignUpMode) {
+    // Create account with Firebase Auth
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Update user profile with their Display Name
+        return userCredential.user.updateProfile({
+          displayName: nameInput
+        });
+      })
+      .then(() => {
+        status.textContent = "Account created successfully!";
+        status.className = "form-status ok";
+
+        setTimeout(() => {
+          document.getElementById('overlay').classList.remove('open');
+          document.getElementById('loginDrawer').classList.remove('open');
+          status.textContent = "";
+          document.getElementById('loginForm').reset();
+          if (nameFieldContainer) nameFieldContainer.style.display = 'none';
+          isSignUpMode = false;
+        }, 1000);
+      })
+      .catch((error) => {
+        status.textContent = error.message;
+        status.className = "form-status err";
+      });
+  } else {
+    // Normal Sign In
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        status.textContent = "Successfully logged in!";
+        status.className = "form-status ok";
+
+        setTimeout(() => {
+          document.getElementById('overlay').classList.remove('open');
+          document.getElementById('loginDrawer').classList.remove('open');
+          status.textContent = "";
+          document.getElementById('loginForm').reset();
+        }, 1000);
+      })
+      .catch((error) => {
+        status.textContent = error.message;
+        status.className = "form-status err";
+      });
+  }
+});
+
+// Real-Time Auth State Listener
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    isLoggedIn = true;
+    document.getElementById('loginBtn').style.display = 'none';
+    document.getElementById('adminMenuWrap').style.display = 'inline-block';
+  } else {
+    isLoggedIn = false;
+    document.getElementById('loginBtn').style.display = 'inline-block';
+    document.getElementById('adminMenuWrap').style.display = 'none';
+  }
+  renderCart();
+});
+
+// Toggle Admin Dropdown Menu
+const adminBtn = document.getElementById('adminBtn');
+const adminDropdown = document.getElementById('adminDropdown');
+
+if (adminBtn && adminDropdown) {
+  adminBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    adminDropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => {
+    adminDropdown.classList.remove('open');
+  });
+}
+
+// Dropdown Actions
+document.getElementById('menuProfile').addEventListener('click', () => alert('Navigating to Profile...'));
+document.getElementById('menuOrders').addEventListener('click', () => alert('Navigating to Orders list...'));
+document.getElementById('menuHelp').addEventListener('click', () => alert('Opening Help Desk...'));
+
+// Sign Out
+document.getElementById('menuLogout').addEventListener('click', () => {
+  auth.signOut().then(() => {
+    alert('Logged out successfully.');
+  });
+});
+
+// Prompt Login Button in Cart
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'promptLoginBtn') {
+    closeDrawer();
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('loginDrawer').classList.add('open');
+  }
+});
 let currentZoomProductId = null;
 let selectedColorKey = null;
 let selectedSize = null;
@@ -709,7 +992,7 @@ const PRODUCTS = [
   { id: 27, name: "SLAKOVIAN-WHITE", tag: "WIDE LEG", price: 900, img: "https://i.ibb.co/1Y5pRCFk/wide-leg.jpg", sizes: ["28","30","32","34","36"] },
   { id: 28, name: "7", tag: "COL TEES", price: 800, hasColorZoom: true, images: ["https://i.ibb.co/zHxRLkhH/available-2.jpg","https://i.ibb.co/q3jyKB7K/available-3.jpg"], colorMap:{ "iced blue":"https://i.ibb.co/zHxRLkhH/available-2.jpg", "indigo blue":"https://i.ibb.co/q3jyKB7K/available-3.jpg" }, sizes: ["S", "M", "L", "XL"] },
   { id: 29, name: "D-PORCH", tag: "D-JERSY", price: 850, images: ["https://i.ibb.co/MkhXGctw/12.jpg","https://i.ibb.co/rRvbmBQm/13.jpg"], sizes: ["S", "M", "L", "XL"] },
-  { id: 30, name: "ADIDAS COL", tag: "COL TEES", price: 800, images: ["https://i.ibb.co/xKRp7sH8/8.jpg","https://i.ibb.co/cSJvJQXT/7.jpg","https://i.ibb.co/MkL4g1HC/9.jpg"], sizes: ["S", "M", "L", "XL"] }
+  { id: 30, name: "ADIDAS COL", tag: "COL TEES", price: 800, hasColorZoom:true, images: ["https://i.ibb.co/xKRp7sH8/8.jpg","https://i.ibb.co/cSJvJQXT/7.jpg","https://i.ibb.co/MkL4g1HC/9.jpg"], sizes: ["S", "M", "L", "XL"] },
 ];
 
 function parseCartKey(key){
@@ -899,6 +1182,18 @@ function renderCart(){
     return;
   }
 
+  // Inside renderCart(), right where drawerForm.style.display is handled:
+const loginPrompt = document.getElementById('loginPrompt');
+const orderFormEl = document.getElementById('orderForm');
+
+if (!isLoggedIn) {
+  if (loginPrompt) loginPrompt.style.display = 'block';
+  if (orderFormEl) orderFormEl.style.display = 'none';
+} else {
+  if (loginPrompt) loginPrompt.style.display = 'none';
+  if (orderFormEl) orderFormEl.style.display = 'block';
+}
+
   drawerForm.style.display = 'block';
   drawerBody.innerHTML = entries.map(([Key, qty]) => {
     const { productId, size, colorKey } = parseCartKey(Key);
@@ -941,6 +1236,10 @@ drawerBody.addEventListener('click', e => {
 renderCart();
 
 /* ---------- Send order ---------- */
+/* ---------- Send order & UPI Integration ---------- */
+const BUSINESS_UPI_ID = "paytm.s26z8bm@pty"; // <-- PUT YOUR REAL UPI ID HERE
+const BUSINESS_NAME = "Vogue X";
+
 const orderForm = document.getElementById('orderForm');
 const sendBtn = document.getElementById('sendBtn');
 const formStatus = document.getElementById('formStatus');
@@ -964,58 +1263,113 @@ orderForm.addEventListener('submit', function(e){
     return;
   }
 
-  const itemsText = entries.map(([Key, qty]) => {
-    const { productId, size, colorKey } = parseCartKey(Key);
-    const p = PRODUCTS.find(p => p.id === productId);
-    const colorName = colorKey ? ` - ${COLOR_LABELS[colorKey] || colorKey}` : '';
-    const sizeName = size ? ` (${size})` : '';
-    const displayName = `${p.name}${sizeName}${colorName}`;
-    return `${displayName} × ${qty} — Rs ${p.price * qty}`;
-  }).join('\n');
-
   const total = cartTotal();
+  const orderId = "VX" + Math.floor(100000 + Math.random() * 900000);
 
-  const templateParams = {
-    customer_name: name,
-    customer_phone: phone,
-    customer_address: fullAddress,
-    order_items: itemsText,
-    order_total: `Rs ${total}`,
-    to_email: OWNER_EMAIL
-  };
+   // 1. Construct standard UPI URI
+  const upiUri = `upi://pay?pa=${encodeURIComponent(BUSINESS_UPI_ID)}&pn=${encodeURIComponent(BUSINESS_NAME)}&am=${total}&tr=${orderId}&cu=INR`;
 
-  sendBtn.disabled = true;
-  sendBtn.textContent = "Sending...";
-  formStatus.textContent = "";
-  formStatus.className = "form-status";
+  // 2. Show UPI payment box and generate QR code
+  const upiBox = document.getElementById('upiPaymentBox');
+  const qrContainer = document.getElementById('qrcode');
+  const btnContainer = document.getElementById('upiButtonContainer');
+  
+  qrContainer.innerHTML = ""; 
+  upiBox.style.display = "block";
 
-  const useEmailJs = EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && window.emailjs;
+  new QRCode(qrContainer, {
+    text: upiUri,
+    width: 150,
+    height: 150
+  });
 
-  if (useEmailJs){
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-      .then(() => {
-        formStatus.textContent = "Order sent! We'll confirm shortly.";
-        formStatus.className = "form-status ok";
-        cart = {};
-        renderCart();
-        orderForm.reset();
-      })
-      .catch(() => {
-        formStatus.textContent = "Couldn't send automatically — opening your email app instead.";
-        formStatus.className = "form-status err";
-        fallbackMailto(name, phone, fullAddress, itemsText, total);
-      })
-      .finally(() => {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Send Order";
-      });
+  // Always render the Mobile Pay Button on small screens or mobile user agents
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  
+  if (isMobile) {
+    btnContainer.innerHTML = `<a href="${upiUri}" class="send-btn" style="display:block; text-decoration:none; text-align:center; background:#25D366; margin-bottom:10px; padding:12px;">Pay Rs ${total} via UPI App</a>`;
   } else {
-    fallbackMailto(name, phone, fullAddress, itemsText, total);
-    sendBtn.disabled = false;
-    sendBtn.textContent = "Send Order";
-    formStatus.textContent = "Opening your email app to send the order...";
-    formStatus.className = "form-status ok";
+    btnContainer.innerHTML = `
+      <a href="${upiUri}" class="send-btn" style="display:block; text-decoration:none; text-align:center; background:#25D366; margin-bottom:10px; padding:12px;">Pay via UPI App / Link</a>
+      <p style="font-size:0.8rem; color:#555;">Or scan this QR code using GPay, PhonePe, or Paytm.</p>
+    `;
   }
+
+  // Smooth scroll drawer form to reveal the full QR code and buttons
+  drawerForm.scrollTo({ top: drawerForm.scrollHeight, behavior: 'smooth' });
+
+  // Hide initial submit button
+  sendBtn.style.display = "none";
+
+  // 3. Confirmation Button
+  let confirmBtn = document.getElementById('confirmPaidBtn');
+  if (!confirmBtn) {
+    confirmBtn = document.createElement('button');
+    confirmBtn.id = 'confirmPaidBtn';
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'send-btn';
+    confirmBtn.style.background = '#1a7d3f';
+    confirmBtn.style.marginTop = '10px';
+    confirmBtn.textContent = 'I Have Paid — Send Order';
+    upiBox.appendChild(confirmBtn);
+  } else {
+    confirmBtn.style.display = 'block';
+  }
+
+  confirmBtn.onclick = function() {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Sending Order...";
+    formStatus.textContent = "Processing order...";
+    formStatus.className = "form-status";
+
+    const itemsText = entries.map(([Key, qty]) => {
+      const { productId, size, colorKey } = parseCartKey(Key);
+      const p = PRODUCTS.find(item => item.id === productId);
+      const colorName = colorKey ? ` - ${COLOR_LABELS[colorKey] || colorKey}` : '';
+      const sizeName = size ? ` (${size})` : '';
+      return `${p.name}${sizeName}${colorName} × ${qty} — Rs ${p.price * qty}`;
+    }).join('\n');
+
+    const templateParams = {
+      customer_name: name,
+      customer_phone: phone,
+      customer_address: fullAddress,
+      order_items: itemsText,
+      order_total: `Rs ${total}`,
+      order_id: orderId,
+      to_email: OWNER_EMAIL
+    };
+
+    const useEmailJs = EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && window.emailjs;
+
+    if (useEmailJs){
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(() => {
+          formStatus.textContent = `Order sent! Ref: ${orderId}`;
+          formStatus.className = "form-status ok";
+          cart = {};
+          renderCart();
+          orderForm.reset();
+          upiBox.style.display = "none";
+          sendBtn.style.display = "block";
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'I Have Paid — Send Order';
+        })
+        .catch(() => {
+          formStatus.textContent = "Auto-email failed — opening email app.";
+          formStatus.className = "form-status err";
+          fallbackMailto(name, phone, fullAddress, itemsText, total);
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'I Have Paid — Send Order';
+        });
+    } else {
+      fallbackMailto(name, phone, fullAddress, itemsText, total);
+      formStatus.textContent = "Opening email app to send order...";
+      formStatus.className = "form-status ok";
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'I Have Paid — Send Order';
+    }
+  };
 });
 
 function fallbackMailto(name, phone, address, itemsText, total){
