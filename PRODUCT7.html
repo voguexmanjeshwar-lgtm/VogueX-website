@@ -7,13 +7,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,700;0,800;1,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="[https://checkout.razorpay.com/v1/checkout.js](https://checkout.razorpay.com/v1/checkout.js)"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <!-- Firebase App (the core Firebase SDK) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <!-- Firebase Authentication -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <style>
- 
   :root{
     --black:#0b0b0d;
     --cream:#f7f3ec;
@@ -25,7 +27,6 @@
   }
 
   *{box-sizing:border-box; margin:0; padding:0;}
-
   html{scroll-behavior:smooth;}
 
   body{
@@ -44,9 +45,7 @@
   }
 
   a{color:inherit;}
-
   img{display:block; max-width:100%;}
-
   button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
 
   /* ---------- Header ---------- */
@@ -357,7 +356,7 @@
   #qrcode img, #qrcode canvas{ 
     margin:0 auto;
     max-width: 100%;
-    height: ;auto !important;
+    height: auto !important;
   }
   .empty-cart{
     color:#8a8790;
@@ -399,11 +398,6 @@
     margin-top:8px;
     display:inline-block;
     cursor:pointer;
-  }
-
-  .drawer-form{
-    border-top:1px solid rgba(11,11,13,0.1);
-    padding:20px 24px 26px;
   }
 
   .drawer-form .total-row{
@@ -534,49 +528,88 @@
     font-weight: bold;
   }
   .admin-menu-wrap {
-  position: relative;
-  display: inline-block;
-}
+    position: relative;
+    display: inline-block;
+  }
 
-.admin-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: 180px;
-  background: var(--black);
-  color: var(--cream);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 0;
-  display: none;
-  flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  z-index: 100;
-}
+  .admin-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 180px;
+    background: var(--black);
+    color: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 0;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 100;
+  }
 
-.admin-dropdown.open {
-  display: flex;
-}
+  .admin-dropdown.open {
+    display: flex;
+  }
 
-.admin-dropdown-item {
-  padding: 10px 18px;
-  font-size: 0.85rem;
-  text-align: left;
-  transition: background 0.2s ease, color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .admin-dropdown-item {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    text-align: left;
+    transition: background 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.admin-dropdown-item:hover {
-  background: rgba(255, 45, 106, 0.15);
-  color: var(--pink);
-}
+  .admin-dropdown-item:hover {
+    background: rgba(255, 45, 106, 0.15);
+    color: var(--pink);
+  }
+
+  /* Admin Orders Modal Styling */
+  .admin-orders-modal {
+    position: fixed; inset: 0;
+    background: rgba(11,11,13,0.85);
+    z-index: 200;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .admin-orders-modal.open { display: flex; }
+  .admin-orders-content {
+    background: var(--cream);
+    color: var(--black);
+    width: 100%; max-width: 900px;
+    max-height: 85vh;
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .admin-orders-header {
+    padding: 20px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(11,11,13,0.1);
+  }
+  .admin-orders-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .orders-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;
+  }
+  .orders-table th, .orders-table td {
+    padding: 12px; border-bottom: 1px solid rgba(11,11,13,0.1); vertical-align: top;
+  }
+  .orders-table th { background: rgba(11,11,13,0.05); font-weight: 700; }
+  .order-item-tag {
+    background: #e7e1d6; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px; font-size: 0.8rem;
+  }
 </style>
-
 </head>
 <body>
- <header>
+<header>
   <div class="logo">Vogue<span>X</span></div>
   <div style="display:flex; gap:10px; align-items:center;">
     <button class="header-link" id="loginBtn">Login</button>
@@ -690,11 +723,10 @@
       <span id="totalAmount">Rs 0</span>
     </div>
 
-    
-<div id="loginPrompt" style="text-align:center; padding:20px; background:#f1e3ab; color:#0b0b0d; border-radius:6px; margin-bottom:12px;">
-  <p style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Please log in to place your order.</p>
-  <button type="button" class="send-btn" id="promptLoginBtn" style="padding:10px 20px; width:auto;">Login Now</button>
-</div>
+    <div id="loginPrompt" style="text-align:center; padding:20px; background:#f1e3ab; color:#0b0b0d; border-radius:6px; margin-bottom:12px;">
+      <p style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Please log in to place your order.</p>
+      <button type="button" class="send-btn" id="promptLoginBtn" style="padding:10px 20px; width:auto;">Login Now</button>
+    </div>
 
     <form id="orderForm">
       <div class="field">
@@ -728,7 +760,7 @@
           <input type="text" id="custLandmark" placeholder="e.g., Near City Mall or Opposite Bank">
         </div>
       </div>
-      <!-- Add this right above the submit button -->
+      
       <div id="upiPaymentBox" style="display:none; text-align:center; margin-bottom:12px; padding:15px; background:#fff; border-radius:6px; color:#0b0b0d;">
         <p style="font-size:0.85rem; margin-bottom:10px; font-weight:600;">Scan with any UPI App or click below:</p>
         <div id="qrcode" style="display:inline-block; margin-bottom:10px;"></div>
@@ -741,6 +773,7 @@
     </form>
   </div>
 </div>
+
 <div class="overlay" id="loginOverlay"></div>
 <div class="drawer" id="loginDrawer" style="width:min(100vw, 380px);">
 <div class="drawer-head">
@@ -763,7 +796,6 @@
     </div>
     <button type="submit" class="send-btn" id="authSubmitBtn" style="margin-top:10px;">Sign In</button>
 
-    <!-- Sign Up Switcher -->
     <p style="text-align:center; margin-top:14px; font-size:0.82rem; color:var(--muted);">
       <span id="authToggleText">Need an account?</span> 
       <a href="#" id="authToggleBtn" style="color:var(--pink); text-decoration:underline; font-weight:600;">Sign Up</a>
@@ -772,6 +804,31 @@
     <p class="form-status" id="loginStatus"></p>
   </form>
 </div>
+</div>
+
+<!-- ---------- ADMIN ORDERS MODAL ---------- -->
+<div class="admin-orders-modal" id="adminOrdersModal">
+  <div class="admin-orders-content">
+    <div class="admin-orders-header">
+      <h3 style="font-size: 1.3rem;">Recorded Orders</h3>
+      <button class="drawer-close" id="closeOrdersModal">✕</button>
+    </div>
+    <div class="admin-orders-body">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID / Date</th>
+            <th>Customer Info</th>
+            <th>Items</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <tr><td colspan="4" style="text-align:center;">Loading orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- EmailJS -->
@@ -790,9 +847,11 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 let isLoggedIn = false;
 let isSignUpMode = false;
+let currentUser = null;
 
 // Modal Open/Close Event Listeners
 document.getElementById('loginBtn').addEventListener('click', () => {
@@ -805,7 +864,6 @@ document.getElementById('loginClose').addEventListener('click', () => {
   document.getElementById('loginDrawer').classList.remove('open');
 });
 
-// Toggle Sign In vs Sign Up
 // Toggle Sign In vs Sign Up
 const authToggleBtn = document.getElementById('authToggleBtn');
 const nameFieldContainer = document.getElementById('nameFieldContainer');
@@ -823,12 +881,12 @@ if (authToggleBtn) {
       if (submitBtn) submitBtn.textContent = "Create Account";
       if (toggleText) toggleText.textContent = "Already have an account?";
       if (toggleBtn) toggleBtn.textContent = "Sign In";
-      if (nameFieldContainer) nameFieldContainer.style.display = 'block'; // Show name field
+      if (nameFieldContainer) nameFieldContainer.style.display = 'block';
     } else {
       if (submitBtn) submitBtn.textContent = "Sign In";
       if (toggleText) toggleText.textContent = "Need an account?";
       if (toggleBtn) toggleBtn.textContent = "Sign Up";
-      if (nameFieldContainer) nameFieldContainer.style.display = 'none';  // Hide name field
+      if (nameFieldContainer) nameFieldContainer.style.display = 'none';
     }
   });
 }
@@ -845,10 +903,8 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
   status.className = "form-status";
 
   if (isSignUpMode) {
-    // Create account with Firebase Auth
     auth.createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        // Update user profile with their Display Name
         return userCredential.user.updateProfile({
           displayName: nameInput
         });
@@ -871,7 +927,6 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
         status.className = "form-status err";
       });
   } else {
-    // Normal Sign In
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
         status.textContent = "Successfully logged in!";
@@ -893,6 +948,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
 
 // Real-Time Auth State Listener
 auth.onAuthStateChanged((user) => {
+  currentUser = user;
   if (user) {
     isLoggedIn = true;
     document.getElementById('loginBtn').style.display = 'none';
@@ -922,7 +978,69 @@ if (adminBtn && adminDropdown) {
 
 // Dropdown Actions
 document.getElementById('menuProfile').addEventListener('click', () => alert('Navigating to Profile...'));
-document.getElementById('menuOrders').addEventListener('click', () => alert('Navigating to Orders list...'));
+
+// View Orders Admin Feature
+const adminOrdersModal = document.getElementById('adminOrdersModal');
+const closeOrdersModal = document.getElementById('closeOrdersModal');
+const ordersTableBody = document.getElementById('ordersTableBody');
+
+document.getElementById('menuOrders').addEventListener('click', () => {
+  adminOrdersModal.classList.add('open');
+  fetchAndRenderOrders();
+});
+
+closeOrdersModal.addEventListener('click', () => {
+  adminOrdersModal.classList.remove('open');
+});
+
+function fetchAndRenderOrders() {
+  ordersTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading orders...</td></tr>';
+  
+  db.collection("orders").orderBy("createdAt", "desc").get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        ordersTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No orders recorded yet.</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      querySnapshot.forEach((doc) => {
+        const order = doc.data();
+        const dateStr = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleString() : 'N/A';
+        
+        let itemsHtml = '';
+        if (Array.isArray(order.items)) {
+          itemsHtml = order.items.map(item => `
+            <div><span class="order-item-tag">${item.name} (${item.size}${item.color ? ' - ' + item.color : ''})</span> × ${item.qty} = Rs ${item.subtotal}</div>
+          `).join('');
+        } else {
+          itemsHtml = `<pre style="font-size:0.8rem; white-space:pre-wrap;">${order.itemsText || ''}</pre>`;
+        }
+
+        html += `
+          <tr>
+            <td>
+              <strong>${order.orderId || doc.id}</strong><br>
+              <span style="color:var(--muted); font-size:0.75rem;">${dateStr}</span>
+            </td>
+            <td>
+              <strong>${order.customerName}</strong><br>
+              📞 ${order.customerPhone}<br>
+              <span style="color:#55524d; font-size:0.78rem;">${order.customerAddress}</span>
+            </td>
+            <td>${itemsHtml}</td>
+            <td><strong>Rs ${order.totalAmount}</strong></td>
+          </tr>
+        `;
+      });
+      ordersTableBody.innerHTML = html;
+    })
+    .catch((error) => {
+      console.error("Error fetching orders: ", error);
+      ordersTableBody.innerHTML = `<tr><td colspan="4" style="color:var(--pink-deep); text-align:center;">Failed to load orders: ${error.message}</td></tr>`;
+    });
+}
+
 document.getElementById('menuHelp').addEventListener('click', () => alert('Opening Help Desk...'));
 
 // Sign Out
@@ -940,6 +1058,7 @@ document.addEventListener('click', (e) => {
     document.getElementById('loginDrawer').classList.add('open');
   }
 });
+
 let currentZoomProductId = null;
 let selectedColorKey = null;
 let selectedSize = null;
@@ -1182,17 +1301,16 @@ function renderCart(){
     return;
   }
 
-  // Inside renderCart(), right where drawerForm.style.display is handled:
-const loginPrompt = document.getElementById('loginPrompt');
-const orderFormEl = document.getElementById('orderForm');
+  const loginPrompt = document.getElementById('loginPrompt');
+  const orderFormEl = document.getElementById('orderForm');
 
-if (!isLoggedIn) {
-  if (loginPrompt) loginPrompt.style.display = 'block';
-  if (orderFormEl) orderFormEl.style.display = 'none';
-} else {
-  if (loginPrompt) loginPrompt.style.display = 'none';
-  if (orderFormEl) orderFormEl.style.display = 'block';
-}
+  if (!isLoggedIn) {
+    if (loginPrompt) loginPrompt.style.display = 'block';
+    if (orderFormEl) orderFormEl.style.display = 'none';
+  } else {
+    if (loginPrompt) loginPrompt.style.display = 'none';
+    if (orderFormEl) orderFormEl.style.display = 'block';
+  }
 
   drawerForm.style.display = 'block';
   drawerBody.innerHTML = entries.map(([Key, qty]) => {
@@ -1235,9 +1353,8 @@ drawerBody.addEventListener('click', e => {
 
 renderCart();
 
-/* ---------- Send order ---------- */
 /* ---------- Send order & UPI Integration ---------- */
-const BUSINESS_UPI_ID = "paytm.s26z8bm@pty"; // <-- PUT YOUR REAL UPI ID HERE
+const BUSINESS_UPI_ID = "paytm.s26z8bm@pty";
 const BUSINESS_NAME = "Vogue X";
 
 const orderForm = document.getElementById('orderForm');
@@ -1266,10 +1383,8 @@ orderForm.addEventListener('submit', function(e){
   const total = cartTotal();
   const orderId = "VX" + Math.floor(100000 + Math.random() * 900000);
 
-   // 1. Construct standard UPI URI
   const upiUri = `upi://pay?pa=${encodeURIComponent(BUSINESS_UPI_ID)}&pn=${encodeURIComponent(BUSINESS_NAME)}&am=${total}&tr=${orderId}&cu=INR`;
 
-  // 2. Show UPI payment box and generate QR code
   const upiBox = document.getElementById('upiPaymentBox');
   const qrContainer = document.getElementById('qrcode');
   const btnContainer = document.getElementById('upiButtonContainer');
@@ -1283,7 +1398,6 @@ orderForm.addEventListener('submit', function(e){
     height: 150
   });
 
-  // Always render the Mobile Pay Button on small screens or mobile user agents
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
   
   if (isMobile) {
@@ -1295,13 +1409,10 @@ orderForm.addEventListener('submit', function(e){
     `;
   }
 
-  // Smooth scroll drawer form to reveal the full QR code and buttons
   drawerForm.scrollTo({ top: drawerForm.scrollHeight, behavior: 'smooth' });
 
-  // Hide initial submit button
   sendBtn.style.display = "none";
 
-  // 3. Confirmation Button
   let confirmBtn = document.getElementById('confirmPaidBtn');
   if (!confirmBtn) {
     confirmBtn = document.createElement('button');
@@ -1318,54 +1429,89 @@ orderForm.addEventListener('submit', function(e){
 
   confirmBtn.onclick = function() {
     confirmBtn.disabled = true;
-    confirmBtn.textContent = "Sending Order...";
-    formStatus.textContent = "Processing order...";
+    confirmBtn.textContent = "Saving Order...";
+    formStatus.textContent = "Processing & saving order...";
     formStatus.className = "form-status";
 
+    const structuredItems = [];
     const itemsText = entries.map(([Key, qty]) => {
       const { productId, size, colorKey } = parseCartKey(Key);
       const p = PRODUCTS.find(item => item.id === productId);
-      const colorName = colorKey ? ` - ${COLOR_LABELS[colorKey] || colorKey}` : '';
-      const sizeName = size ? ` (${size})` : '';
-      return `${p.name}${sizeName}${colorName} × ${qty} — Rs ${p.price * qty}`;
+      const colorName = colorKey ? COLOR_LABELS[colorKey] || colorKey : '';
+      const sizeName = size || '';
+
+      structuredItems.push({
+        id: productId,
+        name: p.name,
+        price: p.price,
+        size: sizeName,
+        color: colorName,
+        qty: qty,
+        subtotal: p.price * qty
+      });
+
+      return `${p.name}${sizeName ? ` (${sizeName})` : ''}${colorName ? ` - ${colorName}` : ''} × ${qty} — Rs ${p.price * qty}`;
     }).join('\n');
 
-    const templateParams = {
-      customer_name: name,
-      customer_phone: phone,
-      customer_address: fullAddress,
-      order_items: itemsText,
-      order_total: `Rs ${total}`,
-      order_id: orderId,
-      to_email: OWNER_EMAIL
+    // Order Payload for Database
+    const orderData = {
+      orderId: orderId,
+      customerName: name,
+      customerPhone: phone,
+      customerAddress: fullAddress,
+      items: structuredItems,
+      itemsText: itemsText,
+      totalAmount: total,
+      userUid: currentUser ? currentUser.uid : null,
+      userEmail: currentUser ? currentUser.email : null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    const useEmailJs = EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && window.emailjs;
+    // Save Order into Firestore Database
+    db.collection("orders").doc(orderId).set(orderData)
+      .then(() => {
+        const templateParams = {
+          customer_name: name,
+          customer_phone: phone,
+          customer_address: fullAddress,
+          order_items: itemsText,
+          order_total: `Rs ${total}`,
+          order_id: orderId,
+          to_email: OWNER_EMAIL
+        };
 
-    if (useEmailJs){
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-        .then(() => {
-          formStatus.textContent = `Order sent! Ref: ${orderId}`;
-          formStatus.className = "form-status ok";
-          cart = {};
-          renderCart();
-          orderForm.reset();
-          upiBox.style.display = "none";
-          sendBtn.style.display = "block";
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = 'I Have Paid — Send Order';
-        })
-        .catch(() => {
-          formStatus.textContent = "Auto-email failed — opening email app.";
-          formStatus.className = "form-status err";
+        const useEmailJs = EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && window.emailjs;
+
+        if (useEmailJs){
+          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+            .then(() => {
+              finishOrderProcess(`Order placed & saved! Ref: ${orderId}`);
+            })
+            .catch(() => {
+              fallbackMailto(name, phone, fullAddress, itemsText, total);
+              finishOrderProcess(`Order saved! (Opened email app) Ref: ${orderId}`);
+            });
+        } else {
           fallbackMailto(name, phone, fullAddress, itemsText, total);
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = 'I Have Paid — Send Order';
-        });
-    } else {
-      fallbackMailto(name, phone, fullAddress, itemsText, total);
-      formStatus.textContent = "Opening email app to send order...";
+          finishOrderProcess(`Order recorded! Ref: ${orderId}`);
+        }
+      })
+      .catch((err) => {
+        console.error("Firestore Save Error: ", err);
+        formStatus.textContent = "Failed to save order to database. Please try again.";
+        formStatus.className = "form-status err";
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'I Have Paid — Send Order';
+      });
+
+    function finishOrderProcess(msg) {
+      formStatus.textContent = msg;
       formStatus.className = "form-status ok";
+      cart = {};
+      renderCart();
+      orderForm.reset();
+      upiBox.style.display = "none";
+      sendBtn.style.display = "block";
       confirmBtn.disabled = false;
       confirmBtn.textContent = 'I Have Paid — Send Order';
     }
@@ -1380,6 +1526,5 @@ function fallbackMailto(name, phone, address, itemsText, total){
   window.location.href = `mailto:${OWNER_EMAIL}?subject=${subject}&body=${body}`;
 }
 </script>
-
 </body>
 </html>
